@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 'use strict';
 
 const Hapi = require('hapi');
@@ -29,3 +30,6 @@ server.register(require('./features'), logErr);
 server.start(startHandler);
 
 module.exports = server;
+=======
+// null
+>>>>>>> 44c3a837bc92a569f8c37168403d415b260843d2
