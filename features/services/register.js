@@ -44,5 +44,5 @@ exports.register = (server, options, next) => {
 
 exports.register.attributes = {
     'name': 'features-services-register',
-    'version': '0.1.0'
+    'version': '1.0.0'
 };

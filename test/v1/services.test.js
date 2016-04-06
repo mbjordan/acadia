@@ -86,4 +86,19 @@ describe('/v1/services', () => {
             done();
         });
     });
+
+    it('Should return an error when deregistering an already deregistered service', (done) => {
+        const opts = {
+            'method': 'DELETE',
+            'url': util.format('/v1/services/deregister/%s', id),
+        };
+
+        server.inject(opts, (response) => {
+            expect(response.result).to.be.an.object();
+            expect(response.result).to.deep.equal({
+                'error': util.format('`%s` not found', id)
+            });
+            done();
+        });
+    });
 });
