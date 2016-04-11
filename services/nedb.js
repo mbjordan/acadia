@@ -2,31 +2,33 @@
 
 const Nedb = require('nedb');
 
-const db = {};
+const setupConfigDb = () => {
+    const db = new Nedb({
+        'filename': '.data-config',
+        'autoload': true
+    });
+    db.ensureIndex({
+        'fieldName': 'key',
+        'unique': true
+    });
+    return db;
+};
 
-db.config = new Nedb({
-    'filename': '.data-config',
-    'autoload': true
-});
-
-db.config.ensureIndex({
-    'fieldName': 'key',
-    'unique': true
-});
-
-db.services = new Nedb({
-    'filename': '.data-services',
-    'autoload': true
-});
-
-db.services.ensureIndex({
-    'fieldName': 'serviceId',
-    'unique': true
-});
+const setupServicesDb = () => {
+    const db = new Nedb({
+        'filename': '.data-services',
+        'autoload': true
+    });
+    db.ensureIndex({
+        'fieldName': 'serviceName',
+        'unique': true
+    });
+    return db;
+};
 
 exports.register = (server, options, next) => {
-    server.expose('config', db.config);
-    server.expose('services', db.services);
+    server.expose('config', setupConfigDb());
+    server.expose('services', setupServicesDb());
     return next();
 };
 

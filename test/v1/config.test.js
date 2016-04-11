@@ -73,7 +73,7 @@ describe('/v1/config', () => {
 
         server.inject(opts, (response) => {
             expect(response.result).to.deep.equal({
-                'error': util.format('Cannot update key `%s`. Does not exist.', randomKey)
+                'error': util.format('`%s` does not exist', randomKey)
             });
             done();
         });
@@ -90,7 +90,7 @@ describe('/v1/config', () => {
 
         server.inject(opts, (response) => {
             expect(response.result).to.deep.equal({
-                'error': util.format('Cannot add `%s`. Already exists.', key)
+                'error': util.format('Can\'t insert key %s, it violates the unique constraint', key)
             });
             done();
         });
@@ -98,19 +98,24 @@ describe('/v1/config', () => {
 
     it('Should return the expected result', (done) => {
         server.inject(util.format('/v1/config%s', key), (response) => {
-            expect(response.result).to.deep.equal({
-                'key': key,
-                'value': testObj[key]
-            });
+            expect(response.result).to.deep.equal([
+                {
+                    'key': key,
+                    'value': testObj[key]
+                }
+            ]);
             done();
         });
     });
 
     it('Should return the expected result when non-explicit search', (done) => {
         server.inject('/v1/config/tsting', (response) => {
-            expect(response.result).to.deep.equal({
-                'searchResults': testObj
-            });
+            expect(response.result).to.deep.equal([
+                {
+                    'key': key,
+                    'value': testObj[key]
+                }
+            ]);
             done();
         });
     });
@@ -140,7 +145,7 @@ describe('/v1/config', () => {
 
         server.inject(opts, (response) => {
             expect(response.result).to.deep.equal({
-                'error': util.format('`%s` not found', key)
+                'error': util.format('key `%s` not found', key)
             });
             done();
         });
@@ -148,9 +153,7 @@ describe('/v1/config', () => {
 
     it('Should not return the expected result, after deletion', (done) => {
         server.inject(util.format('/v1/config%s', key), (response) => {
-            expect(response.result).to.deep.equal({
-                'error': util.format('`%s` not found', key)
-            });
+            expect(response.result).to.deep.equal([]);
             done();
         });
     });

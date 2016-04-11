@@ -1,11 +1,12 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (key) => {
+const getReplyError = (message) => {
     return {
-        'error': util.format('`%s` not found', key)
+        'error': message
     };
 };
 
@@ -18,15 +19,29 @@ const getReplySuccess = (key) => {
     };
 };
 
+const removeHandler = (reply, key) => {
+    return (err, numRemoved) => {
+        if (err) {
+            console.error(err);
+            return reply(getReplyError(err.message));
+        }
+        if (numRemoved === 0) {
+            return reply(getReplyError(util.format('key `%s` not found', key)))
+                .code(404);
+        }
+        return reply(getReplySuccess(key));
+    };
+};
+
+const getQuery = (key) => {
+    return {
+        'key': key
+    };
+};
+
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const result = server.plugins.datalog.remove(key);
-    
-    if (!result) {
-        return reply(getReplyError(key)).code(404);
-    }
-    return reply(getReplySuccess(key));
-
+    server.plugins.db.config.remove(getQuery(key), {}, removeHandler(reply, key));
 };
 
 exports.register = (server, options, next) => {

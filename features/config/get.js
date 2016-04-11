@@ -1,46 +1,47 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (key) => {
+const getQuery = (key) => {
     return {
-        'error': util.format('`%s` not found', key)
+        'key': {
+            '$regex': new RegExp(key, 'i')
+        }
     };
 };
 
-const getReplySearch = (searchResults) => {
+const getReplyError = (message) => {
     return {
-        'searchResults': searchResults
+        'error': message
     };
 };
 
-const getReplyRead = (key, readResults) => {
-    return {
-        'key': key,
-        'value': readResults
+const sanitizeDocs = (docs) => {
+    const newDocs = [];
+    docs.forEach((doc) => {
+        newDocs[newDocs.length] = {
+            'key': doc.key,
+            'value': doc.value
+        };
+    });
+    return newDocs;
+};
+
+const findHandler = (reply) => {
+    return (err, docs) => {
+        if (err) {
+            console.error(err);
+            return reply(getReplyError(err.message));
+        }
+        return reply(sanitizeDocs(docs));
     };
 };
-
-const tryKeySearch = (datalog, key, reply) => {
-    const searchResults = datalog.keySearch(key, false);
-
-    if (!searchResults) {
-        return reply(getReplyError(key)).code(404);
-    }
-    return reply(getReplySearch(searchResults));
-};
-
-// new RegExp(key, 'i')
 
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const readResults = server.plugins.datalog.read(key);
-
-    if (!readResults) {
-        return tryKeySearch(server.plugins.datalog, key, reply);
-    }
-    return reply(getReplyRead(key, readResults));
+    server.plugins.db.config.find(getQuery(key), findHandler(reply));
 };
 
 exports.register = (server, options, next) => {
