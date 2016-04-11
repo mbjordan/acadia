@@ -12,6 +12,7 @@
     "hapi-swagger": "^4.2.1",
     "inert": "^3.2.0",
     "joi": "^8.0.4",
+    "nedb": "^1.8.0",
     "ramda": "^0.19.1",
     "require-directory": "^2.1.1",
     "require-hapi-plugin-dir": "^1.0.0",

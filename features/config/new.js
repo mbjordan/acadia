@@ -1,32 +1,40 @@
 'use strict';
 
+const assert = require('assert');
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (key) => {
+const getReplyError = (message) => {
     return {
-        'error': util.format('Cannot add `%s`. Already exists.', key)
+        'error': message
     };
 };
 
-const getReplySuccess = (request, key) => {
+const getReplySuccess = (data) => {
     return {
         'new': 'success',
-        'data': {
-            'key': key,
-            'value': request.payload.value
+        'data': data
+    };
+};
+
+const insertHandler = (data, reply) => {
+    return (err) => {
+        if (err) {
+            console.error(err);
+            return reply(getReplyError(err.message));
         }
+        return reply(getReplySuccess(data));
     };
 };
 
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const insert = server.plugins.datalog.insert(key, request.payload.value);
-
-    if (!insert) {
-        return reply(getReplyError(key)).code(400);
-    }
-    return reply(getReplySuccess(request, key));
+    const data = {
+        'key': key,
+        'value': request.payload.value
+    };
+    server.plugins.db.config.insert(data, insertHandler(data, reply));
 };
 
 exports.register = (server, options, next) => {

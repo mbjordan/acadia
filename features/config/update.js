@@ -3,9 +3,9 @@
 const util = require('util');
 const common = require('common');
 
-const getReplyError = (key) => {
+const getReplyError = (message) => {
     return {
-        'error': util.format('Cannot update key `%s`. Does not exist.', key)
+        'error': message
     };
 };
 
@@ -19,14 +19,37 @@ const getReplySuccess = (request, key) => {
     };
 };
 
+const updateHandler = (request, reply, key) => {
+    return (err, numReplaced) => {
+        if (err) {
+            console.error(err);
+            return reply(getReplyError(err.message));
+        }
+
+        if (numReplaced === 0) {
+            return reply(
+                getReplyError(util.format('`%s` does not exist', key))
+            ).code(404);
+        }
+
+        return reply(getReplySuccess(request, key));
+    };
+};
+
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const update = server.plugins.datalog.update(key, request.payload.value);
-
-    if (!update) {
-        return reply(getReplyError(key)).code(400);
-    }
-    return reply(getReplySuccess(request, key));
+    const searchQuery = {
+        'key': key
+    };
+    const data = {
+        'key': key,
+        'value': request.payload.value
+    };
+    server.plugins.db.config.update(
+        searchQuery,
+        data,
+        updateHandler(request, reply, key)
+    );
 };
 
 exports.register = (server, options, next) => {

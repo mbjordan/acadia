@@ -1,8 +1,8 @@
 'use strict';
 
-const handler = (server, request, reply) => {
+const handler = (request, reply) => {
     return reply({
-        'ok': server.plugins.datalog.read('/~/health')
+        'ok': true
     });
 };
 
@@ -10,7 +10,7 @@ exports.register = (server, options, next) => {
     server.route({
         'method': 'GET',
         'path': '/health',
-        'handler': handler.bind(this, server)
+        'handler': handler
     });
     return next();
 };

@@ -31,6 +31,8 @@ const tryKeySearch = (datalog, key, reply) => {
     return reply(getReplySearch(searchResults));
 };
 
+// new RegExp(key, 'i')
+
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
     const readResults = server.plugins.datalog.read(key);
