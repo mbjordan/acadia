@@ -20,7 +20,7 @@
   "devDependencies": {
     "code": "^2.1.1",
     "lab": "^10.3.0"
-},
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mbjordan/acadia.git"

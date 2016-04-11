@@ -13,7 +13,8 @@ const startHandler = (err) => {
     if (err) {
         throw err;
     }
-    console.log('Running! %s', server.info.uri);
+    console.log('Acadia is running!');
+    console.log(JSON.stringify(server.info, null, 4));
 };
 
 server.connection({

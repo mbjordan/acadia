@@ -3,35 +3,48 @@
 const util = require('util');
 const common = require('common');
 
+const getReplyError = (key) => {
+    return {
+        'error': util.format('`%s` not found', key)
+    };
+};
+
+const getReplySearch = (searchResults) => {
+    return {
+        'searchResults': searchResults
+    };
+};
+
+const getReplyRead = (key, readResults) => {
+    return {
+        'key': key,
+        'value': readResults
+    };
+};
+
 const tryKeySearch = (datalog, key, reply) => {
     const searchResults = datalog.keySearch(key, false);
-    if (searchResults) {
-        return reply({
-            'searchResults': searchResults
-        });
+
+    if (!searchResults) {
+        return reply(getReplyError(key)).code(404);
     }
-    return reply({
-        'error': util.format('`%s` not found', key)
-    }).code(404);
+    return reply(getReplySearch(searchResults));
 };
 
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const datalog = server.plugins.datalog;
-    const readResults = datalog.read(key);
-    if (readResults) {
-        return reply({
-            'key': key,
-            'value': readResults
-        });
+    const readResults = server.plugins.datalog.read(key);
+
+    if (!readResults) {
+        return tryKeySearch(server.plugins.datalog, key, reply);
     }
-    return tryKeySearch(datalog, key, reply);
+    return reply(getReplyRead(key, readResults));
 };
 
 exports.register = (server, options, next) => {
     server.route({
         'method': 'GET',
-        'path': '/v1/config/get/{key*}',
+        'path': '/v1/config/{key*}',
         'handler': handler.bind(this, server),
         'config': {
             'validate': {

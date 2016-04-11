@@ -20,7 +20,7 @@ describe('/v1/config', () => {
     it('Should allow to set a value to a key', (done) => {
         const opts = {
             'method': 'POST',
-            'url': util.format('/v1/config/upsert%s', key),
+            'url': util.format('/v1/config%s', key),
             'payload': {
                 'value': testObj[key]
             }
@@ -28,7 +28,7 @@ describe('/v1/config', () => {
 
         server.inject(opts, (response) => {
             expect(response.result).to.deep.equal({
-                'upsert': 'success',
+                'new': 'success',
                 'data': {
                     'key': key,
                     'value': testObj[key]
@@ -38,8 +38,66 @@ describe('/v1/config', () => {
         });
     });
 
+    it('Should allow to update a value', (done) => {
+        testObj[key] = 'this is the other text we want, now';
+
+        const opts = {
+            'method': 'PUT',
+            'url': util.format('/v1/config%s', key),
+            'payload': {
+                'value': testObj[key]
+            }
+        };
+
+        server.inject(opts, (response) => {
+            expect(response.result).to.deep.equal({
+                'update': 'success',
+                'data': {
+                    'key': key,
+                    'value': testObj[key]
+                }
+            });
+            done();
+        });
+    });
+
+    it('Should return an error on update (PUT) if the key does not exists', (done) => {
+        const randomKey = '/v1/config/some/random/key/that/should/not/exist';
+        const opts = {
+            'method': 'PUT',
+            'url': util.format('/v1/config%s', randomKey),
+            'payload': {
+                'value': testObj[key]
+            }
+        };
+
+        server.inject(opts, (response) => {
+            expect(response.result).to.deep.equal({
+                'error': util.format('Cannot update key `%s`. Does not exist.', randomKey)
+            });
+            done();
+        });
+    });
+
+    it('Should return an error when trying to POST the same key twice', (done) => {
+        const opts = {
+            'method': 'POST',
+            'url': util.format('/v1/config%s', key),
+            'payload': {
+                'value': testObj[key]
+            }
+        };
+
+        server.inject(opts, (response) => {
+            expect(response.result).to.deep.equal({
+                'error': util.format('Cannot add `%s`. Already exists.', key)
+            });
+            done();
+        });
+    });
+
     it('Should return the expected result', (done) => {
-        server.inject(util.format('/v1/config/get%s', key), (response) => {
+        server.inject(util.format('/v1/config%s', key), (response) => {
             expect(response.result).to.deep.equal({
                 'key': key,
                 'value': testObj[key]
@@ -49,7 +107,7 @@ describe('/v1/config', () => {
     });
 
     it('Should return the expected result when non-explicit search', (done) => {
-        server.inject('/v1/config/get/tsting', (response) => {
+        server.inject('/v1/config/tsting', (response) => {
             expect(response.result).to.deep.equal({
                 'searchResults': testObj
             });
@@ -60,7 +118,7 @@ describe('/v1/config', () => {
     it('Should allow to delete a value to a key', (done) => {
         const opts = {
             'method': 'DELETE',
-            'url': util.format('/v1/config/remove%s', key)
+            'url': util.format('/v1/config%s', key)
         };
 
         server.inject(opts, (response) => {
@@ -77,7 +135,7 @@ describe('/v1/config', () => {
     it('Should return an error when attempting to delete a non-existant key', (done) => {
         const opts = {
             'method': 'DELETE',
-            'url': util.format('/v1/config/remove%s', key)
+            'url': util.format('/v1/config%s', key)
         };
 
         server.inject(opts, (response) => {
@@ -89,7 +147,7 @@ describe('/v1/config', () => {
     });
 
     it('Should not return the expected result, after deletion', (done) => {
-        server.inject(util.format('/v1/config/get%s', key), (response) => {
+        server.inject(util.format('/v1/config%s', key), (response) => {
             expect(response.result).to.deep.equal({
                 'error': util.format('`%s` not found', key)
             });

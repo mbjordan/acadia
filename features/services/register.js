@@ -5,18 +5,22 @@ const common = require('common');
 
 const getLocation = (payload) => util.format('%s:%s', payload.host, payload.port);
 
-const handler = (server, request, reply) => {
-    server.plugins.datalog.upsert(
-        common.formatServiceId(request.params.id),
-        getLocation(request.payload)
-    );
-    return reply({
+const getReplySuccess = (request) => {
+    return {
         'register': 'success',
         'data': {
             'id': request.params.id,
             'address': getLocation(request.payload)
         }
-    });
+    };
+};
+
+const handler = (server, request, reply) => {
+    server.plugins.datalog.upsert(
+        common.formatServiceId(request.params.id),
+        getLocation(request.payload)
+    );
+    return reply(getReplySuccess(request));
 };
 
 exports.register = (server, options, next) => {
@@ -35,7 +39,7 @@ exports.register = (server, options, next) => {
                 }
             },
             'description': '(Re)register a service',
-            'notes': 'Registers a given service by Id',
+            'notes': 'Registers a given service by Id via upsert-like operation.',
             'tags': ['api', 'services']
         }
     });

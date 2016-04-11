@@ -5,43 +5,46 @@ const common = require('common');
 
 const getReplyError = (key) => {
     return {
-        'error': util.format('`%s` not found', key)
+        'error': util.format('Cannot add `%s`. Already exists.', key)
     };
 };
 
-const getReplySuccess = (key) => {
+const getReplySuccess = (request, key) => {
     return {
-        'remove': 'success',
+        'new': 'success',
         'data': {
-            'key': key
+            'key': key,
+            'value': request.payload.value
         }
     };
 };
 
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const result = server.plugins.datalog.remove(key);
-    
-    if (!result) {
-        return reply(getReplyError(key)).code(404);
-    }
-    return reply(getReplySuccess(key));
+    const insert = server.plugins.datalog.insert(key, request.payload.value);
 
+    if (!insert) {
+        return reply(getReplyError(key)).code(400);
+    }
+    return reply(getReplySuccess(request, key));
 };
 
 exports.register = (server, options, next) => {
     server.route({
-        'method': 'DELETE',
+        'method': 'POST',
         'path': '/v1/config/{key*}',
         'handler': handler.bind(this, server),
         'config': {
             'validate': {
                 'params': {
                     'key': common.validators.config.key
+                },
+                'payload': {
+                    'value': common.validators.config.value
                 }
             },
-            'description': 'Remove a key/value pair',
-            'notes': 'Removes the specified key from the datastore',
+            'description': 'Insert a key/value pair',
+            'notes': 'Inserts a new key/value pair',
             'tags': ['api', 'config']
         }
     });
@@ -49,6 +52,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-config-remove',
+    'name': 'features-config-new',
     'version': '1.0.0'
 };

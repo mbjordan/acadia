@@ -10,14 +10,19 @@ const getServicesNames = (results) => {
     return arr;
 };
 
+const getReplyError = () => {
+    return {
+        'error': 'No registered services'
+    };
+};
+
 const handler = (server, request, reply) => {
     const results = server.plugins.datalog.keySearch(getAllServicesKey(), true);
-    if (results) {
-        return reply(getServicesNames(results));
+    if (!results) {
+        return reply(getReplyError()).code(404);
     }
-    return reply({
-        'error': 'No registered services'
-    }).code(404);
+    return reply(getServicesNames(results));
+
 };
 
 exports.register = (server, options, next) => {

@@ -5,21 +5,15 @@ const fs = require('fs');
 // in memory, baby
 let datalog;
 
-const getFilename = () => {
-    return '.data';
-};
+const getFilename = () => '.data';
 
 const saveToDisc = () => {
-    console.time('[DATALOG] data saved to disk');
-
     const json = JSON.stringify(datalog, null, 1) + '\n';
     const saveHandler = (err) => {
         if (err) {
             throw err;
         }
-        console.timeEnd('[DATALOG] data saved to disk');
     };
-
     fs.writeFile(getFilename(), json, 'utf8', saveHandler);
 };
 
@@ -27,16 +21,27 @@ const keySearchResultOrFalse = (result) => {
     return (Object.keys(result).length > 0) ? result : false;
 };
 
-const remove = (key) => {
-    console.log('[DATALOG] Remove %s', key);
+const removeAction = (key) => {
     delete datalog[key];
     saveToDisc();
     return true;
 };
 
-const read = (key) => {
-    return datalog[key] || false;
+const upsert = (key, value) => {
+    datalog[key] = value;
+    saveToDisc();
+    return value;
 };
+
+const insert = (key, value) => {
+    return (!datalog.hasOwnProperty(key)) ? upsert(key, value) : false;
+};
+
+const update = (key, value) => {
+    return (datalog.hasOwnProperty(key)) ? upsert(key, value) : false;
+};
+
+const read = (key) => datalog[key] || false;
 
 const keySearch = (key, includePrivate) => {
     const keyRegexp = new RegExp(key, 'i');
@@ -52,26 +57,18 @@ const keySearch = (key, includePrivate) => {
     return keySearchResultOrFalse(result);
 };
 
-const upsert = (key, value) => {
-    datalog[key] = value;
-    saveToDisc();
-    console.log('[DATALOG] Upsert %s', key);
-    return value;
-};
-
-const shouldRemove = (key) => {
-    if (datalog.hasOwnProperty(key)) {
-        return remove(key);
-    }
-    return false;
+const remove = (key) => {
+    return (datalog.hasOwnProperty(key)) ? removeAction(key) : false;
 };
 
 exports.register = (server, options, next) => {
     datalog = JSON.parse(fs.readFileSync(getFilename(), 'utf8'));
+    server.expose('upsert', upsert);
+    server.expose('insert', insert);
+    server.expose('update', update);
     server.expose('read', read);
     server.expose('keySearch', keySearch);
-    server.expose('upsert', upsert);
-    server.expose('remove', shouldRemove);
+    server.expose('remove', remove);
     return next();
 };
 

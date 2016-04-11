@@ -3,19 +3,28 @@
 const util = require('util');
 const common = require('common');
 
+const getReplyError = (request) => {
+    return {
+        'error': util.format('`%s` not found', request.params.id)
+    };
+};
+
+const getReplySuccess = (request, result) => {
+    return {
+        'id': request.params.id,
+        'address': result
+    };
+};
+
 const handler = (server, request, reply) => {
     const result = server.plugins.datalog.read(
         common.formatServiceId(request.params.id)
     );
-    if (result) {
-        return reply({
-            'id': request.params.id,
-            'address': result
-        });
+
+    if (!result) {
+        return reply(getReplyError(request)).code(404);
     }
-    return reply({
-        'error': util.format('`%s` not found', request.params.id)
-    }).code(404);
+    return reply(getReplySuccess(request, result));
 };
 
 exports.register = (server, options, next) => {

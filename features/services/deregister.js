@@ -3,21 +3,30 @@
 const util = require('util');
 const common = require('common');
 
+const getReplyError = (request) => {
+    return {
+        'error': util.format('`%s` not found', request.params.id)
+    };
+};
+
+const getReplySuccess = (request) => {
+    return {
+        'deregister': 'success',
+        'data': {
+            'id': request.params.id
+        }
+    };
+};
+
 const handler = (server, request, reply) => {
     const result = server.plugins.datalog.remove(
         common.formatServiceId(request.params.id)
     );
-    if (result) {
-        return reply({
-            'deregister': 'success',
-            'data': {
-                'id': request.params.id
-            }
-        });
+
+    if (!result) {
+        return reply(getReplyError(request)).code(404);
     }
-    return reply({
-        'error': util.format('`%s` not found', request.params.id)
-    }).code(404);
+    return reply(getReplySuccess(request));
 };
 
 exports.register = (server, options, next) => {
