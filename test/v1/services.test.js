@@ -48,7 +48,7 @@ describe('/v1/services', () => {
 
     it('Should allow to discover a service', (done) => {
         server.inject(util.format('/v1/services/discover/%s', name), (response) => {
-            expect(response.result).to.be.an.array();
+            expect(response.result).to.be.an.object();
             expect(response.result).to.deep.include({
                 'serviceName': name,
                 'host': host,
@@ -84,8 +84,10 @@ describe('/v1/services', () => {
 
     it('Should not allow to discover a service, after deregistration', (done) => {
         server.inject(util.format('/v1/services/discover/%s', name), (response) => {
-            expect(response.result).to.be.an.array();
-            expect(response.result).to.deep.equal([]);
+            expect(response.result).to.be.an.object();
+            expect(response.result).to.deep.equal({
+                'error': util.format('Service `%s` not found', name)
+            });
             done();
         });
     });

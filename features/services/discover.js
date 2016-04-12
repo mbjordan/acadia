@@ -10,19 +10,55 @@ const getQuery = (name) => {
     };
 };
 
-const discoverHandler = (reply) => {
+const sanitizeResponse = (doc) => {
+    return {
+        'serviceName': doc.serviceName,
+        'host': doc.host,
+        'port': doc.port,
+        'location': doc.location,
+        'lastSeen': doc.updatedAt
+    };
+};
+
+const validateLastCheckIn = (doc) => {
+    // 1h15m check in interval.
+    if ((doc.updatedAt.getTime() + 4500000) <= new Date().getTime()) {
+        return false;
+    }
+    return doc;
+};
+
+const show404 = (reply, name) => {
+    return reply(
+        common.getReplyError(util.format('Service `%s` not found', name))
+    ).code(404);
+};
+
+const showInvalid = (reply, name) => {
+    return reply(
+        common.getReplyError(util.format('Service `%s` has not checked in', name))
+    );
+};
+
+const discoverHandler = (name, reply) => {
     return (err, doc) => {
         if (err) {
             return reply(common.getReplyError(err.message));
         }
-        reply(doc);
+        if (!doc) {
+            return show404(reply, name);
+        }
+        if (!validateLastCheckIn(doc)) {
+            return showInvalid(reply, name);
+        }
+        return reply(sanitizeResponse(doc));
     };
 };
 
 const handler = (server, request, reply) => {
-    return server.plugins.db.services.find(
+    return server.plugins.db.services.findOne(
         getQuery(request.params.name),
-        discoverHandler(reply)
+        discoverHandler(request.params.name, reply)
     );
 };
 
