@@ -4,12 +4,6 @@ const util = require('util');
 
 const common = require('common');
 
-const getReplyError = (message) => {
-    return {
-        'error': message
-    };
-};
-
 const getReplySuccess = (data) => {
     return {
         'new': 'success',
@@ -20,20 +14,28 @@ const getReplySuccess = (data) => {
 const insertHandler = (data, reply) => {
     return (err) => {
         if (err) {
-            console.error(err);
-            return reply(getReplyError(err.message));
+            return reply(common.getReplyError(err.message));
         }
         return reply(getReplySuccess(data));
     };
 };
 
-const handler = (server, request, reply) => {
-    const key = common.formatConfigKey(request.params.key);
-    const data = {
+const getData = (key, value) => {
+    return {
         'key': key,
-        'value': request.payload.value
+        'value': value
     };
-    server.plugins.db.config.insert(data, insertHandler(data, reply));
+};
+
+const handler = (server, request, reply) => {
+    const data = getData(
+        common.formatConfigKey(request.params.key),
+        request.payload.value
+    );
+    server.plugins.db.config.insert(
+        data,
+        insertHandler(data, reply)
+    );
 };
 
 exports.register = (server, options, next) => {

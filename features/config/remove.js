@@ -4,9 +4,9 @@ const util = require('util');
 
 const common = require('common');
 
-const getReplyError = (message) => {
+const getQuery = (key) => {
     return {
-        'error': message
+        'key': key
     };
 };
 
@@ -23,19 +23,14 @@ const removeHandler = (reply, key) => {
     return (err, numRemoved) => {
         if (err) {
             console.error(err);
-            return reply(getReplyError(err.message));
+            return reply(common.getReplyError(err.message));
         }
         if (numRemoved === 0) {
-            return reply(getReplyError(util.format('key `%s` not found', key)))
-                .code(404);
+            return reply(
+                common.getReplyError(util.format('key `%s` not found', key))
+            ).code(404);
         }
         return reply(getReplySuccess(key));
-    };
-};
-
-const getQuery = (key) => {
-    return {
-        'key': key
     };
 };
 

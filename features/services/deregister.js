@@ -1,43 +1,52 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (request) => {
+const getQuery = (name) => {
     return {
-        'error': util.format('`%s` not found', request.params.id)
+        'serviceName': name
     };
 };
 
-const getReplySuccess = (request) => {
+const getReplySuccess = (name) => {
     return {
-        'deregister': 'success',
-        'data': {
-            'id': request.params.id
+        'deregister': 'success'
+    };
+};
+
+const removeHandler = (name, reply) => {
+    return (err, numRemoved) => {
+        if (err) {
+            console.error(err);
+            return reply(common.getReplyError(err.message));
         }
+        if (numRemoved === 0) {
+            return reply(
+                common.getReplyError(util.format('Service `%s` not found', name))
+            ).code(404);
+        }
+        return reply(getReplySuccess());
     };
 };
 
 const handler = (server, request, reply) => {
-    const result = server.plugins.datalog.remove(
-        common.formatServiceId(request.params.id)
+    server.plugins.db.services.remove(
+        getQuery(request.params.name), {},
+        removeHandler(request.params.name, reply)
     );
-
-    if (!result) {
-        return reply(getReplyError(request)).code(404);
-    }
-    return reply(getReplySuccess(request));
 };
 
 exports.register = (server, options, next) => {
     server.route({
         'method': 'DELETE',
-        'path': '/v1/services/deregister/{id}',
+        'path': '/v1/services/deregister/{name}',
         'handler': handler.bind(this, server),
         'config': {
             'validate': {
                 'params': {
-                    'id': common.validators.service.id
+                    'name': common.validators.service.name
                 }
             },
             'description': 'Deregister (remove) a service',

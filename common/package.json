@@ -1,6 +1,9 @@
 {
   "name": "common",
-  "version": "1.0.0",
-  "description": "on board common utilities",
-  "main": "index.js"
+  "version": "1.2.0",
+  "description": "On board common utilities",
+  "main": "index.js",
+  "dependencies": {
+    "require-directory": "^2.1.1"
+  }
 }

@@ -1,28 +1,26 @@
 'use strict';
 
-const getAllServicesKey = () => '/~/service/';
+const common = require('common');
 
-const getServicesNames = (results) => {
-    var arr = [];
-    for (var prop in results) {
-        arr[arr.length] = prop.replace(getAllServicesKey(), '');
+const onlyServiceNames = (docsArray) => {
+    let newDocs = [];
+    for (let idx = 0; idx < docsArray.length; idx++) {
+        newDocs[newDocs.length] = docsArray[idx].serviceName;
     }
-    return arr;
+    return newDocs;
 };
 
-const getReplyError = () => {
-    return {
-        'error': 'No registered services'
+const listHander = (reply) => {
+    return (err, docs) => {
+        if (err) {
+            return reply(common.getReplyError(err.message));
+        }
+        return reply(onlyServiceNames(docs));
     };
 };
 
 const handler = (server, request, reply) => {
-    const results = server.plugins.datalog.keySearch(getAllServicesKey(), true);
-    if (!results) {
-        return reply(getReplyError()).code(404);
-    }
-    return reply(getServicesNames(results));
-
+    return server.plugins.db.services.find({}, listHander(reply));
 };
 
 exports.register = (server, options, next) => {

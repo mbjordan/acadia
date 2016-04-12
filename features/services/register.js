@@ -1,37 +1,67 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
+
+const getQuery = (name) => {
+    return {
+        'serviceName': name
+    };
+};
 
 const getLocation = (payload) => util.format('%s:%s', payload.host, payload.port);
 
-const getReplySuccess = (request) => {
+const getUpdateData = (name, payload) => {
+    return {
+        'serviceName': name,
+        'host': payload.host,
+        'port': payload.port,
+        'location': getLocation(payload)
+    };
+};
+
+const getUpdateOptions = () => {
+    return {
+        'upsert': true,
+        'returnUpdatedDocs': true
+    };
+};
+
+const getReplySuccess = (doc) => {
     return {
         'register': 'success',
-        'data': {
-            'id': request.params.id,
-            'address': getLocation(request.payload)
+        'service': doc
+    };
+};
+
+const registerHandler = (reply) => {
+    return (err, num, doc) => {
+        if (err) {
+            return reply(common.getReplyError(err.message));
         }
+        return reply(getReplySuccess(doc));
     };
 };
 
 const handler = (server, request, reply) => {
-    server.plugins.datalog.upsert(
-        common.formatServiceId(request.params.id),
-        getLocation(request.payload)
+    return server.plugins.db.services.update(
+        getQuery(request.params.name),
+        getUpdateData(request.params.name, request.payload),
+        getUpdateOptions(),
+        registerHandler(reply)
     );
-    return reply(getReplySuccess(request));
 };
 
 exports.register = (server, options, next) => {
     server.route({
         'method': 'POST',
-        'path': '/v1/services/register/{id}',
+        'path': '/v1/services/register/{name}',
         'handler': handler.bind(this, server),
         'config': {
             'validate': {
                 'params': {
-                    'id': common.validators.service.id
+                    'name': common.validators.service.name
                 },
                 'payload': {
                     'host': common.validators.service.host,

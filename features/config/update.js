@@ -1,11 +1,19 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (message) => {
+const getQuery = (key) => {
     return {
-        'error': message
+        'key': key
+    };
+};
+
+const getData = (key, value) => {
+    return {
+        'key': key,
+        'value': value
     };
 };
 
@@ -23,12 +31,12 @@ const updateHandler = (request, reply, key) => {
     return (err, numReplaced) => {
         if (err) {
             console.error(err);
-            return reply(getReplyError(err.message));
+            return reply(common.getReplyError(err.message));
         }
 
         if (numReplaced === 0) {
             return reply(
-                getReplyError(util.format('`%s` does not exist', key))
+                common.getReplyError(util.format('`%s` does not exist', key))
             ).code(404);
         }
 
@@ -38,16 +46,9 @@ const updateHandler = (request, reply, key) => {
 
 const handler = (server, request, reply) => {
     const key = common.formatConfigKey(request.params.key);
-    const searchQuery = {
-        'key': key
-    };
-    const data = {
-        'key': key,
-        'value': request.payload.value
-    };
-    server.plugins.db.config.update(
-        searchQuery,
-        data,
+    return server.plugins.db.config.update(
+        getQuery(key),
+        getData(key, request.payload.value),
         updateHandler(request, reply, key)
     );
 };

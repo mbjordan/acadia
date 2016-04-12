@@ -2,9 +2,10 @@
 
 const Nedb = require('nedb');
 
-const setupConfigDb = () => {
+const configDatabase = (file, indexName) => {
     const db = new Nedb({
         'filename': '.data-config',
+        'timestampData': true,
         'autoload': true
     });
     db.ensureIndex({
@@ -14,9 +15,10 @@ const setupConfigDb = () => {
     return db;
 };
 
-const setupServicesDb = () => {
+const servicesDatabase = (file, indexName) => {
     const db = new Nedb({
         'filename': '.data-services',
+        'timestampData': true,
         'autoload': true
     });
     db.ensureIndex({
@@ -27,8 +29,8 @@ const setupServicesDb = () => {
 };
 
 exports.register = (server, options, next) => {
-    server.expose('config', setupConfigDb());
-    server.expose('services', setupServicesDb());
+    server.expose('config', configDatabase());
+    server.expose('services', servicesDatabase());
     return next();
 };
 

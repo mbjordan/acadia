@@ -3,7 +3,7 @@
 const Hapi = require('hapi');
 const server = new Hapi.Server();
 
-const logErr = (err) => {
+const throwErrFn = (err) => {
     if (err) {
         throw err;
     }
@@ -21,11 +21,11 @@ server.connection({
     'port': process.env.PORT || 3000
 });
 
-// Register Services
-server.register(require('./services'), logErr);
+// Register the Services
+server.register(require('./services'), throwErrFn);
 
-// Register Features
-server.register(require('./features'), logErr);
+// Register the Features
+server.register(require('./features'), throwErrFn);
 
 server.start(startHandler);
 

@@ -12,12 +12,6 @@ const getQuery = (key) => {
     };
 };
 
-const getReplyError = (message) => {
-    return {
-        'error': message
-    };
-};
-
 const sanitizeDocs = (docs) => {
     const newDocs = [];
     docs.forEach((doc) => {
@@ -33,15 +27,17 @@ const findHandler = (reply) => {
     return (err, docs) => {
         if (err) {
             console.error(err);
-            return reply(getReplyError(err.message));
+            return reply(common.getReplyError(err.message));
         }
         return reply(sanitizeDocs(docs));
     };
 };
 
 const handler = (server, request, reply) => {
-    const key = common.formatConfigKey(request.params.key);
-    server.plugins.db.config.find(getQuery(key), findHandler(reply));
+    server.plugins.db.config.find(
+        getQuery(common.formatConfigKey(request.params.key)),
+        findHandler(reply)
+    );
 };
 
 exports.register = (server, options, next) => {
@@ -64,6 +60,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-config-read',
+    'name': 'features-config-get',
     'version': '1.0.0'
 };

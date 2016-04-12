@@ -1,41 +1,40 @@
 'use strict';
 
 const util = require('util');
+
 const common = require('common');
 
-const getReplyError = (request) => {
+const getQuery = (name) => {
     return {
-        'error': util.format('`%s` not found', request.params.id)
+        'serviceName': name
     };
 };
 
-const getReplySuccess = (request, result) => {
-    return {
-        'id': request.params.id,
-        'address': result
+const discoverHandler = (reply) => {
+    return (err, doc) => {
+        if (err) {
+            return reply(common.getReplyError(err.message));
+        }
+        reply(doc);
     };
 };
 
 const handler = (server, request, reply) => {
-    const result = server.plugins.datalog.read(
-        common.formatServiceId(request.params.id)
+    return server.plugins.db.services.find(
+        getQuery(request.params.name),
+        discoverHandler(reply)
     );
-
-    if (!result) {
-        return reply(getReplyError(request)).code(404);
-    }
-    return reply(getReplySuccess(request, result));
 };
 
 exports.register = (server, options, next) => {
     server.route({
         'method': 'GET',
-        'path': '/v1/services/discover/{id}',
+        'path': '/v1/services/discover/{name}',
         'handler': handler.bind(this, server),
         'config': {
             'validate': {
                 'params': {
-                    'id': common.validators.service.id
+                    'name': common.validators.service.name
                 }
             },
             'description': 'Discover a service',

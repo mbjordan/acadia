@@ -6,7 +6,7 @@ const HapiSwagger = require('hapi-swagger');
 
 const Pack = require('../package');
 
-const logErr = (err) => {
+const throwErrFn = (err) => {
     if (err) {
         throw err;
     }
@@ -23,7 +23,7 @@ const swagger = {
 };
 
 exports.register = (server, options, next) => {
-    server.register([Inert, Vision, swagger], logErr);
+    server.register([Inert, Vision, swagger], throwErrFn);
     next();
 };
 
