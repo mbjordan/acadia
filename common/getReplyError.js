@@ -1,7 +1,9 @@
 'use strict';
 
-module.exports = (message) => {
+const getReplyError = (message) => {
     return {
         'error': message
     };
 };
+
+module.exports = getReplyError;

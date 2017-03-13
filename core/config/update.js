@@ -76,6 +76,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-config-update',
+    'name': 'core-config-update',
     'version': '1.0.0'
 };

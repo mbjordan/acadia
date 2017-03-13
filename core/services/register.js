@@ -77,6 +77,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-services-register',
+    'name': 'core-services-register',
     'version': '1.0.0'
 };

@@ -60,6 +60,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-config-get',
+    'name': 'core-config-get',
     'version': '1.0.0'
 };

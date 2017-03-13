@@ -38,6 +38,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-services-list',
+    'name': 'core-services-list',
     'version': '1.0.0'
 };

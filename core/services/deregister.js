@@ -58,6 +58,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-services-deregister',
+    'name': 'core-services-deregister',
     'version': '1.0.0'
 };

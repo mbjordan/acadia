@@ -59,6 +59,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-config-remove',
+    'name': 'core-config-remove',
     'version': '1.0.0'
 };

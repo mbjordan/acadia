@@ -16,6 +16,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-health',
+    'name': 'core-health',
     'version': '1.0.0'
 };

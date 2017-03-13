@@ -82,6 +82,6 @@ exports.register = (server, options, next) => {
 };
 
 exports.register.attributes = {
-    'name': 'features-services-discover',
+    'name': 'core-services-discover',
     'version': '1.0.0'
 };
