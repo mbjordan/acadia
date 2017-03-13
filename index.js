@@ -21,11 +21,11 @@ server.connection({
     'port': process.env.PORT || 3000
 });
 
-// Register the Services
-server.register(require('./services'), throwErrFn);
+// Register the lib/helpers
+server.register(require('./lib'), throwErrFn);
 
-// Register the Features
-server.register(require('./features'), throwErrFn);
+// Register the Core
+server.register(require('./core'), throwErrFn);
 
 server.start(startHandler);
 
