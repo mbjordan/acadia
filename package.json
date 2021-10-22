@@ -9,8 +9,8 @@
   "dependencies": {
     "@hapi/hapi": "^20.0.3",
     "common": "./common",
-    "hapi-swagger": "^4.2.1",
-    "inert": "^3.2.0",
+    "hapi-swagger": "^14.2.4",
+    "inert": "^2.0.0",
     "joi": "^8.0.4",
     "nedb": "^1.8.0",
     "require-hapi-plugin-dir": "^1.0.0",
@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "code": "^2.1.1",
-    "lab": "^10.3.0"
+    "lab": "^18.0.2"
   },
   "repository": {
     "type": "git",
